@@ -1,0 +1,21 @@
+version: '3.9'
+
+services:
+  mysql:
+    image: mysql:8.0.34-debian
+    container_name: mysql_greener
+    ports:
+      - 3306:3306
+    volumes:
+      - mysql_greener:/var/lib/mysql
+    networks:
+      - greener_network
+    environment:
+      MYSQL_ROOT_PASSWORD: greener_case
+
+volumes:
+  mysql_greener:
+
+networks:
+  greener_network:
+    driver: bridge
