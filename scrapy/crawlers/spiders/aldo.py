@@ -1,18 +1,20 @@
 from datetime import datetime
-import http.client
 import json
-import logging
 import re
-import requests
+import sys
+
 import scrapy
 from scrapy.http import JsonRequest
 from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 
+sys.path.append('../../')
+
+from utils import float_number_clear
+
 aldo_api_base_url = 'https://www.aldo.com.br/wcf/Produto.svc'
 
 product_name_regex_pattern = r'\w*\s+(([0-9]|,|\.)*(?=kwp))'
-float_number_clear = lambda n: re.sub(r'(\D(?!(\d+)(?!.*(,|\.)\d+)))', '', n).replace(',', '.')
 
 # Para fins de demonstração, o crawler irá parar após coletar 30 páginas
 pagination_hard_limit = 30
@@ -96,7 +98,7 @@ class AldoSpider(scrapy.Spider):
                 portage = matches.group(1)
 
             else:
-                logging.warning(f'One of the listed products\' name didn\'t matched the expected pattern! Received name: {name}')
+                self.logger.warning(f'One of the listed products\' name didn\'t matched the expected pattern! Received name: {name}')
                 continue
 
             yield {
@@ -112,3 +114,4 @@ class AldoSpider(scrapy.Spider):
             body = json.dumps(products_request_body),
             callback = self.__filtered_parse,
             meta = { 'offset': current_offset + 1 }
+        )

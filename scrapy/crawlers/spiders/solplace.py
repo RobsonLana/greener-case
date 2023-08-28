@@ -1,8 +1,12 @@
 from datetime import datetime
-import logging
 import re
+import sys
 
 import scrapy
+
+sys.path.append('../../')
+
+from utils import float_number_clear
 
 products_base_xpath = '//*[@id="products_grid"]/div/table/tbody/tr[*]/td/div/form/div[2]/div[1]'
 product_name_xpath = f'{products_base_xpath}/h6/a/text()'
@@ -12,7 +16,6 @@ product_price_xpath = f'{products_base_xpath}/div/span[1]/span/text()'
 next_page_xpath = '//*[@id="wrap"]/div[2]/div[5]/ul/li[9]/a/@href'
 
 product_name_regex_pattern = r'kit(\w\s)? ((\d|,|\.)*(?=\s?kwp)).* - \s*(\w*)'
-float_number_clear = lambda n: re.sub(r'(\D(?!(\d+)(?!.*(,|\.)\d+)))', '', n).replace(',', '.')
 
 class SolplaceSpider(scrapy.Spider):
 

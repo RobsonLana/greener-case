@@ -23,30 +23,24 @@ class CrawlersPipeline:
         self.items = []
 
     def process_item(self, item, spider):
-        try:
-            # validate(schemas['solar_panels'], item)
-            origin = spider.name
-            portage = item.get('portage', '')
-            structure = item.get('structure', '')
-            product_id = item.get('product_id', '')
+        origin = spider.name
+        portage = item.get('portage', '')
+        structure = item.get('structure', '')
+        product_id = item.get('product_id', '')
 
-            if 'product_id' in item:
-                del item['product_id']
+        if 'product_id' in item:
+            del item['product_id']
 
-            sha_input = ''.join([
-                origin, str(portage), structure, str(product_id)
-            ])
+        sha_input = ''.join([
+            origin, str(portage), structure, str(product_id)
+        ])
 
-            item['sha_id'] = sha256(sha_input.encode('utf-8')).hexdigest()
-            item['origin'] = origin
-            item['updated_at'] = item['updated_at'].isoformat()
+        item['sha_id'] = sha256(sha_input.encode('utf-8')).hexdigest()
+        item['origin'] = origin
+        item['updated_at'] = item['updated_at'].isoformat()
 
-            self.items.append(item)
-            return item
-
-        except Exception as e:
-            raise DropItem(f'One item from {spider.name} didn\'t passed the validation: {json.dumps(item, indent = 2)}')
-
+        self.items.append(item)
+        return item
 
     def close_spider(self, spider):
         if len(self.items) == 0:

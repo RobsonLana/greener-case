@@ -10,8 +10,8 @@ class SolarPanels(Base):
     sha_id = Column(String(64), primary_key = True)
     origin = Column(String(32))
     updated_at = Column(DateTime)
-    portage = Column(String(16))
-    price = Column(String(32))
+    portage = Column(Float(5, 2))
+    price = Column(Float(10, 2))
     structure = Column(String(16))
 
 tables = {
