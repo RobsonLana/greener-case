@@ -1,0 +1,5 @@
+Scrapy==2.9.0
+scrapy-proxy-pool==0.1.9
+scrapy-rotating-proxies==0.6.2
+dict-schema-validator==0.2.0
+bson==0.5.10

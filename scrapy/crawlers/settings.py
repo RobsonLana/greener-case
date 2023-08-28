@@ -14,8 +14,8 @@ NEWSPIDER_MODULE = "crawlers.spiders"
 
 
 # Crawl responsibly by identifying yourself (and your website) on the user-agent
-# USER_AGENT = "Insomnia/2023.5.6"
-USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+USER_AGENT = "Insomnia/2023.5.6"
+# USER_AGENT = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
@@ -54,14 +54,15 @@ COOKIES_ENABLED = True
 # See https://docs.scrapy.org/en/latest/topics/downloader-middleware.html
 DOWNLOADER_MIDDLEWARES = {
     "crawlers.middlewares.CrawlersDownloaderMiddleware": 543,
-    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
-    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
-    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
-    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
+#    "scrapy.downloadermiddlewares.httpproxy.HttpProxyMiddleware": 1,
+#    'scrapy_proxy_pool.middlewares.ProxyPoolMiddleware': 610,
+#    'scrapy_proxy_pool.middlewares.BanDetectionMiddleware': 620,
+#    'rotating_proxies.middlewares.RotatingProxyMiddleware': 610,
+#    'rotating_proxies.middlewares.BanDetectionMiddleware': 620,
 }
 
 # PROXY_POOL_ENABLED = True
-# ROTATING_PROXY_LIST_PATH = './proxylist.txt'
+# ROTATING_PROXY_LIST_PATH = '../proxylist.txt'
 # ROTATING_PROXY_PAGE_RETRY_TIMES = 2
 # ROTATING_PROXY_BACKOFF_BASE = 5
 # ROTATING_PROXY_BACKOFF_CAP = 30

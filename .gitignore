@@ -1,3 +1,5 @@
 .scrapy
+.directory
 __pycache__
 proxylist.txt
+airflow/logs/**

@@ -1,6 +1,7 @@
 from sqlalchemy import create_engine, Column, String, Float, DateTime
-from sqlalchemy.orm import sessionmaker, aliased
+from sqlalchemy.dialects.mysql import insert
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm import sessionmaker, aliased
 
 Base = declarative_base()
 
@@ -50,6 +51,24 @@ class MysqlConnection:
             self.tables[table], rows,
             render_nulls = True
         )
+
+        self.session.commit()
+
+    def upsert_statement(self, table, *rows):
+        if len(rows) == 0:
+            print('No rows provided to be inserted')
+            return None
+
+        table_base = self.tables[table]
+
+        insert_stmt = insert(table_base)\
+            .values(rows)
+
+        insert_stmt = insert_stmt.on_duplicate_key_update(
+            { 'updated_at': insert_stmt.inserted.updated_at }
+        )
+
+        self.session.execute(insert_stmt)
 
         self.session.commit()
 

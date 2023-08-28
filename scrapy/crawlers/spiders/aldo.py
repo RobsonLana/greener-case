@@ -3,12 +3,12 @@ import http.client
 import json
 import logging
 import re
+import requests
 import scrapy
 from scrapy.http import JsonRequest
 from scrapy.spidermiddlewares.httperror import HttpError
 
 aldo_api_base_url = 'https://www.aldo.com.br/wcf/Produto.svc'
-
 
 product_name_regex_pattern = r'gf (([0-9]|,|\.)+\s?kwp)'
 
@@ -27,9 +27,10 @@ class AldoSpider(scrapy.Spider):
             JsonRequest(
                 url = filter_url,
                 method = 'POST',
-                data = filter_request_body,
+                body = json.dumps(filter_request_body),
                 callback = self.parse,
-                errback = self.error_callback
+                errback = self.error_callback,
+                meta = { 'proxy': '10.244.62.184:80' }
             )
         ]
 

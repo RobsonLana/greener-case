@@ -49,9 +49,9 @@ class CrawlersPipeline:
         else:
             connection = MysqlConnection(
                 'root', 'greener_case',
-                'localhost', 'landing_db'
+                'mysql', 'landing_db'
             )
 
-            connection.insert_statement('solar_panels', *self.items)
+            connection.upsert_statement('solar_panels', *self.items)
 
             del connection
