@@ -26,10 +26,16 @@ class CrawlersPipeline:
         try:
             # validate(schemas['solar_panels'], item)
             origin = spider.name
-            port = item.get('port', '')
+            portage = item.get('portage', '')
             structure = item.get('structure', '')
+            product_id = item.get('product_id', '')
 
-            sha_input = '-'.join([origin, port, structure])
+            if 'product_id' in item:
+                del item['product_id']
+
+            sha_input = ''.join([
+                origin, str(portage), structure, str(product_id)
+            ])
 
             item['sha_id'] = sha256(sha_input.encode('utf-8')).hexdigest()
             item['origin'] = origin

@@ -11,7 +11,8 @@ product_price_xpath = f'{products_base_xpath}/div/span[1]/span/text()'
 
 next_page_xpath = '//*[@id="wrap"]/div[2]/div[5]/ul/li[9]/a/@href'
 
-product_name_regex_pattern = r'kit(\s?\w+)* (([0-9]|,)+\s?kwp) -\s*(\w+)'
+product_name_regex_pattern = r'kit(\w\s)? ((\d|,|\.)*(?=\s?kwp)).* - \s*(\w*)'
+float_number_clear = lambda n: re.sub(r'(\D(?!(\d+)(?!.*(,|\.)\d+)))', '', n).replace(',', '.')
 
 class SolplaceSpider(scrapy.Spider):
 
@@ -22,10 +23,9 @@ class SolplaceSpider(scrapy.Spider):
     def parse(self, response):
         updated_at = datetime.now()
         product_names = response.xpath(product_name_xpath).getall()
-        product_currencies = response.xpath(product_currency_xpath).getall()
         product_prices = response.xpath(product_price_xpath).getall()
 
-        products = list(zip(product_names, product_currencies, product_prices))
+        products = list(zip(product_names, product_prices))
 
         for product in self.__products_list_parse(products):
             yield dict(**product, updated_at = updated_at)
@@ -36,11 +36,12 @@ class SolplaceSpider(scrapy.Spider):
             yield response.follow(next_page, callback = self.parse)
 
     def __products_list_parse(self, products):
-        for name, currency, price in products:
+        for name, price in products:
+            self.logger.info(name)
             matches = re.match(product_name_regex_pattern, name.lower())
 
             if matches:
-                port = matches.group(2)
+                portage = matches.group(2)
                 structure = matches.group(4)
 
             else:
@@ -48,7 +49,7 @@ class SolplaceSpider(scrapy.Spider):
                 continue
 
             yield {
-                'port': port,
-                'price': f'{currency}{price}',
+                'portage': float(float_number_clear(portage)),
+                'price': float(float_number_clear(price)),
                 'structure': structure
             }

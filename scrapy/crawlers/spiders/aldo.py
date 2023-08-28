@@ -6,11 +6,16 @@ import re
 import requests
 import scrapy
 from scrapy.http import JsonRequest
+from scrapy.exceptions import CloseSpider
 from scrapy.spidermiddlewares.httperror import HttpError
 
 aldo_api_base_url = 'https://www.aldo.com.br/wcf/Produto.svc'
 
-product_name_regex_pattern = r'gf (([0-9]|,|\.)+\s?kwp)'
+product_name_regex_pattern = r'\w*\s+(([0-9]|,|\.)*(?=kwp))'
+float_number_clear = lambda n: re.sub(r'(\D(?!(\d+)(?!.*(,|\.)\d+)))', '', n).replace(',', '.')
+
+# Para fins de demonstração, o crawler irá parar após coletar 30 páginas
+pagination_hard_limit = 30
 
 class AldoSpider(scrapy.Spider):
     name = 'aldo'
@@ -29,8 +34,7 @@ class AldoSpider(scrapy.Spider):
                 method = 'POST',
                 body = json.dumps(filter_request_body),
                 callback = self.parse,
-                errback = self.error_callback,
-                meta = { 'proxy': '10.244.62.184:80' }
+                errback = self.error_callback
             )
         ]
 
@@ -41,6 +45,8 @@ class AldoSpider(scrapy.Spider):
             response = failure.value.response
             self.logger.error("HttpError on %s", response.url)
 
+            raise CloseSpider(f'Received HTTP Statuscode {response.url}')
+
     def parse(self, filter_response):
         self.logger.info(filter_response)
         body = json.loads(filter_response.text)
@@ -50,66 +56,59 @@ class AldoSpider(scrapy.Spider):
 
         products_request_body = {
             'filterId': filter_id,
-            'orderby': "2"
+            'orderby': "2",
+            'offset': 1
         }
 
-        offset_counter = 1
-        self.minimum_pages_threshold = 10
-
-        self.gateway_time_out_counter = 0
-        self.gateway_time_out_tolerance = 10
-        offset_end = False
-
-        while not offset_end:
-            products_request_body['offset'] = offset_counter
-
-            updated_at = datetime.now()
-            page_products = JsonRequest(
-                url = products_url,
-                method = 'POST',
-                body = json.dumps(products_request_body),
-                callback = self.__filtered_parse,
-                meta = {
-                    'updated_at': datetime.now()
-                }
-            )
-
-            if page_products is not None:
-                yield page_products
-
-            offset_end = page_products == None
-            offset_counter += 1
+        yield JsonRequest(
+            url = products_url,
+            method = 'POST',
+            body = json.dumps(products_request_body),
+            callback = self.__filtered_parse,
+            meta = { 'offset': 1 }
+        )
 
     def __filtered_parse(self, response):
-        updated_at = response.meta.get('updated_at')
+        if response.status != 200:
+            raise CloseSpider(f'Received HTTP Statuscode {response.url}')
 
-        self.gateway_time_out_tolerance += int(response.status == 504)
+        current_offset = response.meta.get('offset')
 
-        if self.offset_counter > self.minimum_pages_threshold \
-                and self.gateway_time_out_counter >= self.gateway_time_out_tolerance:
-            self.logger.warning('Received 10 times the status code 504 (Gateway Timeout) after scrapped 10 pages, Giving up on task.')
-            return None
+        if current_offset >= pagination_hard_limit:
+            raise CloseSpider(f'Reached pagination limit ({pagination_hard_limit})')
+
+        updated_at = datetime.now()
+
+        self.logger.info(response.request.body)
 
         products = json.loads(response.text)
-
-        if len(products) == 0:
-            return None
+        products_request_body = json.loads(response.request.body)
+        products_request_body['offset'] = current_offset + 1
 
         for product in products:
             name = product['prd_descricao']
             price = product['prd_preco']
+            product_id = product['produto_id']
 
             matches = re.match(product_name_regex_pattern, name.lower())
 
             if matches:
-                port = matches.group(1)
+                portage = matches.group(1)
 
             else:
                 logging.warning(f'One of the listed products\' name didn\'t matched the expected pattern! Received name: {name}')
                 continue
 
             yield {
-                'port': port,
-                'price': str(price),
-                'updated_at': updated_at
+                'portage': float(float_number_clear(portage)),
+                'price': price,
+                'updated_at': updated_at,
+                'product_id': product_id
             }
+
+        yield JsonRequest(
+            url = response.url,
+            method = 'POST',
+            body = json.dumps(products_request_body),
+            callback = self.__filtered_parse,
+            meta = { 'offset': current_offset + 1 }
