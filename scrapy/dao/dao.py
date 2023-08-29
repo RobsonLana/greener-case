@@ -63,7 +63,7 @@ class MysqlConnection:
 
         insert_stmt = insert(table_base).values(rows)
 
-        columns = insert_stmt.inserted.key()
+        columns = insert_stmt.inserted.keys()
 
         insert_stmt = insert_stmt.on_duplicate_key_update(
             { c: insert_stmt.inserted[c] for c in columns }

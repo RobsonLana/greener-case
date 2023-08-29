@@ -49,9 +49,37 @@ A expressão busca pelos seguintes blocos:
 
 A utilização de grupos pode ser observada em linhas como: `portage = matches.group(2)` por exemplo.
 
+O segundo Regex utilizado nesse Crawler (também no segundo Crawler) é responsável pela sanitização de números oriundos de texto que não esteja no formato númerico para computadores:
+
+```regex
+(\D(?!(\d+)(?!.*(,|\.)\d+)))
+```
+
+A expressão busca todos os caracteres que não são digitos, com exceção do único caracter que pode ser interpretado como floating point de um valor.
+
+- `(\D(?!(\d+)(?!.*(,|\.)\d+)))` - Grupo 0
+  - `\D` - Bloco do grupo 0: Busca por caracteres fora do grupo de digitos.
+  - `(?!(\d+)(?!.*(,|\.)\d+))` - Negative Lookahead: Lookahead para desconsiderar qualquer caracter não-digito que precede a descrita sequência.
+    - `(\d+)` - Grupo 1: Pelo menos 1 digito que não precede a sequência descrita no Negative Lookahead a seguir.
+    - `(?!.*(,|\.)\d+)` - Negative Lookahead: Lookahead que desconsidera qualquer digito que segue uma sequência de quaisquer caracteres que precedem pelo menos uma vírgula ou ponto, e esse mesmo caracter (vírgula ou ponto) precede pelo menos um dígito.
+      - `(,|\.)` - Grupo interno do Negative Lookahead: Seleciona uma vírgula ou um ponto.
+
+O objetivo dessa expressão é buscar e limpar qualquer dígito que não possa ser utilizado para preservar o valor original de um número; a mesma deve ser utilizada em conjunto com uma substituição simples de `,` para `.` e certificar que o caracter resultante seja o correto para conversão de string para número.
+
+Exemplos:
+
+- `12.345,67` > `12345.67`
+- `1.234.567,89` > `1234567.89`
+- `12.14.15,236,645,` > `121415236.645`
+- `...,,,232124.,123.,.` > `232124.123`
+
+Repare que a expressão também limpa caracteres que estão no fim da linha, pois os mesmos não podem representar um floating point no número. A expressão foi desenvolvida primariamente para casos como os dois primeiros exemplos.
+
 ### Crawler Aldo
 
 O segundo Crawler consome informações da API [Aldo][2], onde é necessário primeiro gerar um id de filtro pela rota `/getfiltrosporsegmento` e então paginar a lista pela rota `/getprodutosporsegmentonotlogin`.
+
+Seu arquivo de Spider se encontra em `./scrapy/crawlers/spiders/aldo.py`
 
 #### Regular Expression
 
@@ -65,9 +93,9 @@ De forma similar ao Crawler Solplace, um Regex é utilizado para extrair o porte
 
 - `(([0-9]|,|\.)+(?=kwp))` - grupo 1: Grupo que captura o porte do produto, em formato similar ao do Solplace.
 
-    - `([0-9]|,|\.)+` - grupo 2: Grupo utilizado para detectar qualquer digito, virgula ou ponto que ocorra pelo menos uma vez.
+  - `([0-9]|,|\.)+` - grupo 2: Grupo utilizado para detectar qualquer digito, virgula ou ponto que ocorra pelo menos uma vez.
 
-    - `(?=\s?kwp))` - Positive Lookahead: Lookahead que busca pela sequência `kwp` precedida de um ou nenhum espaço.
+  - `(?=\s?kwp))` - Positive Lookahead: Lookahead que busca pela sequência `kwp` precedida de um ou nenhum espaço.
 
 #### Desafios desse scraping
 
