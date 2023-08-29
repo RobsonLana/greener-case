@@ -14,7 +14,7 @@ from utils import float_number_clear
 
 aldo_api_base_url = 'https://www.aldo.com.br/wcf/Produto.svc'
 
-product_name_regex_pattern = r'\w*\s+(([0-9]|,|\.)*(?=kwp))'
+product_name_regex_pattern = r'\w*\s+(([0-9]|,|\.)+(?=\s?kwp))'
 
 # Para fins de demonstração, o crawler irá parar após coletar 30 páginas
 pagination_hard_limit = 30

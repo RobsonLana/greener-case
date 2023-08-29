@@ -19,7 +19,6 @@ USER_AGENT = "Insomnia/2023.5.6"
 
 # Obey robots.txt rules
 ROBOTSTXT_OBEY = True
-RETRY_ENABLED = False
 
 # Configure maximum concurrent requests performed by Scrapy (default: 16)
 #CONCURRENT_REQUESTS = 32
@@ -29,7 +28,7 @@ RETRY_ENABLED = False
 # See also autothrottle settings and docs
 # DOWNLOAD_DELAY = 5
 # The download delay setting will honor only one of:
-CONCURRENT_REQUESTS_PER_DOMAIN = 32
+# CONCURRENT_REQUESTS_PER_DOMAIN = 32
 # CONCURRENT_REQUESTS_PER_IP = 16
 
 # Disable cookies (enabled by default)
@@ -103,5 +102,5 @@ ITEM_PIPELINES = {
 
 # Set settings whose default value is deprecated to a future-proof value
 REQUEST_FINGERPRINTER_IMPLEMENTATION = "2.7"
-TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
+# TWISTED_REACTOR = "twisted.internet.asyncioreactor.AsyncioSelectorReactor"
 FEED_EXPORT_ENCODING = "utf-8"

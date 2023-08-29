@@ -15,7 +15,6 @@ import sys
 sys.path.append('..')
 
 from dao.dao import MysqlConnection
-from dao.validations import validate, schemas
 
 class CrawlersPipeline:
 

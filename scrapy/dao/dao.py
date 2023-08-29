@@ -61,11 +61,12 @@ class MysqlConnection:
 
         table_base = self.tables[table]
 
-        insert_stmt = insert(table_base)\
-            .values(rows)
+        insert_stmt = insert(table_base).values(rows)
+
+        columns = insert_stmt.inserted.key()
 
         insert_stmt = insert_stmt.on_duplicate_key_update(
-            { 'updated_at': insert_stmt.inserted.updated_at }
+            { c: insert_stmt.inserted[c] for c in columns }
         )
 
         self.session.execute(insert_stmt)

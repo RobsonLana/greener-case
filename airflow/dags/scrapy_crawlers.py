@@ -8,10 +8,10 @@ scrapy_path = '/usr/src/scrapy'
 default_args = {
     'owner': 'Greener',
     'description': 'Fluxo de automação para os Crawlers',
-    'start_date': datetime(2023, 8, 27),
+    'start_date': datetime.now(),
     'schedule_interval': '@daily',
-    'retries': 3,
-    'retry_delay': timedelta(minutes = 3)
+    'retries': 1,
+    'retry_delay': timedelta(minutes = 1)
 }
 
 with DAG(

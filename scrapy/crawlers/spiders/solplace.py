@@ -8,14 +8,14 @@ sys.path.append('../../')
 
 from utils import float_number_clear
 
-products_base_xpath = '//*[@id="products_grid"]/div/table/tbody/tr[*]/td/div/form/div[2]/div[1]'
-product_name_xpath = f'{products_base_xpath}/h6/a/text()'
-product_currency_xpath = f'{products_base_xpath}/div/span[1]/text()'
-product_price_xpath = f'{products_base_xpath}/div/span[1]/span/text()'
+products_base_selector = '#products_grid > div > table > tbody > tr > td > div > form > div.card-body.rounded-bottom.p-0.o_wsale_product_information > div.p-2.o_wsale_product_information_text'
 
-next_page_xpath = '//*[@id="wrap"]/div[2]/div[5]/ul/li[9]/a/@href'
+product_name_selector = f'{products_base_selector} > h6 > a::text'
+product_price_selector = f'{products_base_selector} > div > span > span::text'
 
-product_name_regex_pattern = r'kit(\w\s)? ((\d|,|\.)*(?=\s?kwp)).* - \s*(\w*)'
+next_page_selector = '#wrap > div.container.oe_website_sale > div.products_pager.form-inline.justify-content-center.py-3 > ul > li:last-child > a::attr(href)'
+
+product_name_regex_pattern = r'kit (\w*\s)?((\d|,|\.)+(?=\s?kwp)).* -\s+(\S*)'
 
 class SolplaceSpider(scrapy.Spider):
 
@@ -25,15 +25,15 @@ class SolplaceSpider(scrapy.Spider):
 
     def parse(self, response):
         updated_at = datetime.now()
-        product_names = response.xpath(product_name_xpath).getall()
-        product_prices = response.xpath(product_price_xpath).getall()
+        product_names = response.css(product_name_selector).getall()
+        product_prices = response.css(product_price_selector).getall()
 
         products = list(zip(product_names, product_prices))
 
         for product in self.__products_list_parse(products):
             yield dict(**product, updated_at = updated_at)
 
-        next_page = response.xpath(next_page_xpath).get()
+        next_page = response.css(next_page_selector).get()
 
         if next_page is not None:
             yield response.follow(next_page, callback = self.parse)
